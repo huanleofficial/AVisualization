@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup
-import requests
+import requests, openpyxl
 from requests.adapters import HTTPAdapter, Retry
+
+excel = openpyxl.Workbook()
+sheet = excel.activeSheet
+sheet.title = 'Top Rated Movies'
+sheet.append(['Movie Rank', 'Movie Name', 'Year of Releases', 'IMDB Rating'])
+
 try:
     session = requests.Session()
     retry = Retry(connect=3, backoff_factor=0.5)
@@ -9,7 +15,6 @@ try:
     session.mount('https://', adapter)
     HEADERS = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
     url = 'https://www.imdb.com/chart/top/'
-    #source = requests.get('https://www.imdb.com/chart/top/')
     
     source = session.get(url, headers=HEADERS)
     
@@ -28,7 +33,9 @@ try:
         
         rating = movie.find('td', class_="ratingColumn imdbRating").strong.text
         
-        print(rating)
+        sheet.append([rank, name, year, rating])
     
 except Exception as e:
     print(e)
+    
+excel.save('IMDB Movie Ratings.xlsx')
